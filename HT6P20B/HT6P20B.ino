@@ -16,6 +16,9 @@
 
 int x, startbit, ctr, dataok, t1, larpulso, larpulso1, larpulso2, larpulso3, larpulso4, bt1, bt2, antcode = 0;
 unsigned long _data = 0;
+unsigned long _antcode = 0;
+unsigned long _addr = 0;
+unsigned long _state = 0;
 unsigned long _dur, _dur1;
 
 int counter = 1;////////////////////CANAL 1//////////////"variavel Counter"
@@ -25,7 +28,7 @@ const byte pinRF_RX = 2;      //Pin where RF Receiver Module is connected. If ne
 const byte pinRF_TX = 4;      //Pin where RF Transmitter Module is connected. If necessary, change this for your project
 const byte pinButton_TX = 3;   //Pin where "Enable transmission button" is connected. Change this field as pin used in your project
 const byte pinLearnButton = 5; //Pin where "Learn button" is connected. Change this field as pin used in your project
-const byte pinTesteLED = 6;    //Pin where "Learning Led" is connected 
+const byte pinTesteLED = 6;    //Pin where "Learning Led" is connected
 const byte pinReceiveLED = 13; //On board Led
 
 ////////PODE ADICIONAR VARIOS CANAIS...
@@ -84,29 +87,26 @@ void loop()
 
   }
 
-
-
-
   if (ctr == 28)
-  { if (bitRead(_data, 0) == 1)
-    {
-      if (bitRead(_data, 1) == 0)
-      {
-        if (bitRead(_data, 2) == 1)
-        {
-          if (bitRead(_data, 3) == 0)
-          {
-            antcode = 1;
-          }
-        }
-      }
+  {
+    Serial.println("Retornou 28 bits");
+
+    if ((_data & 0xF) == 0x5) { // Se os quatro ultimos bits forem 0101, entao eh uma mensagem valida
+      antcode = 1;
+      _addr = _data >> 6;
+      _state = bitRead(_data, 4) * 2 + bitRead(_data, 5);
+      Serial.println(_addr, HEX);
+      Serial.println(_state, HEX);
     }
 
     if (antcode == 1)
     { // Se foram recebidos todos os 28 Bits, o valor vai para a variavel _data e pode ser usada como exemplo abaixo.
       dataok = 1;
-      Serial.print("Data:");
-      Serial.println(_data, HEX);
+      Serial.print("Address:");
+      Serial.println(_addr, HEX);
+      Serial.print("State:");
+      Serial.println(_state,HEX);
+      
       Serial.println(counter, DEC);
 
       ctr = 0;
